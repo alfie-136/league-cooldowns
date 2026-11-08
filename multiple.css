@@ -40,3 +40,8 @@ input::-webkit-inner-spin-button, input::-webkit-outer-spin-button { -webkit-app
 
 .home-link { display: inline-block; color: #9dd9ff; font-size: 13px; margin-bottom: 8px; text-decoration: none; padding: 4px 0; }
 .home-link:focus-visible { outline: 3px solid #79c6ff; outline-offset: 3px; }
+
+/* Per-enemy summoner spell haste switches */
+.summoner-controls { display: flex; gap: 5px; margin-top: 7px; }
+.summoner-toggle { flex: 1; min-width: 0; min-height: 36px; padding: 5px 2px; font-size: 10px; color: #aabbd2; background: #101a2b; border-color: #33445f; }
+.summoner-toggle[aria-pressed="true"] { background: #214c60; border-color: #79c6ff; color: #e1f5ff; box-shadow: inset 0 -3px #79c6ff; }

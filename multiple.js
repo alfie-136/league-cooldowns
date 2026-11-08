@@ -11,7 +11,7 @@ let rows = [];
 let state = loadState();
 
 function emptySlot() {
-  return { championId: "", level: 3, haste: 0, timers: [0, 0, 0] };
+  return { championId: "", level: 3, haste: 0, ionian: false, cosmic: false, timers: [0, 0, 0] };
 }
 function loadState() {
   const fallback = () => Array.from({ length: 5 }, emptySlot);
@@ -22,6 +22,8 @@ function loadState() {
       championId: typeof item?.championId === "string" ? item.championId : "",
       level: Number.isInteger(item?.level) && item.level >= 3 && item.level <= 18 ? item.level : 3,
       haste: Number.isFinite(item?.haste) && item.haste >= 0 ? item.haste : 0,
+      ionian: item?.ionian === true,
+      cosmic: item?.cosmic === true,
       timers: TIMER_DURATIONS.map((_, i) => Number.isFinite(item?.timers?.[i]) && item.timers[i] > 0 ? item.timers[i] : 0)
     }));
   } catch { return fallback(); }
@@ -155,6 +157,33 @@ function stepper(index, key, amount, min, max) {
   wrapper.append(minus, input, plus);
   return wrapper;
 }
+function summonerHaste(slot) {
+  return (slot.ionian ? 10 : 0) + (slot.cosmic ? 18 : 0);
+}
+function timerDuration(index, timer) {
+  return TIMER_DURATIONS[timer] * 100 / (100 + summonerHaste(state[index]));
+}
+function summonerControls(index) {
+  const controls = make("div", "summoner-controls");
+  for (const [key, text, fullName] of [
+    ["ionian", "Boots +10", "Ionian Boots of Lucidity"],
+    ["cosmic", "Cosmic +18", "Cosmic Insight"]
+  ]) {
+    const button = make("button", "summoner-toggle", text);
+    button.type = "button";
+    button.setAttribute("aria-label", `Enemy ${index + 1}: ${fullName}`);
+    button.setAttribute("aria-pressed", String(state[index][key]));
+    button.title = `${fullName}: affects new summoner timers only`;
+    button.addEventListener("click", () => {
+      state[index][key] = !state[index][key];
+      button.setAttribute("aria-pressed", String(state[index][key]));
+      // Existing deadlines keep the cooldown used when the spell was cast.
+      saveState(); tickTimers();
+    });
+    controls.append(button);
+  }
+  return controls;
+}
 function remainingSeconds(deadline, now = Date.now()) { return Math.max(0, Math.ceil((deadline - now) / 1000)); }
 function formatTime(seconds) { return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`; }
 function tickTimers() {
@@ -164,12 +193,12 @@ function tickTimers() {
       const running = seconds > 0;
       const used = state[index].timers[timer] > 0;
       const label = ["Flash", "Ignite/Barrier", "240-second timer"][timer];
-      const text = running ? formatTime(seconds) : used ? "Ready" : formatTime(TIMER_DURATIONS[timer]);
+      const text = running ? formatTime(seconds) : used ? "Ready" : formatTime(Math.ceil(timerDuration(index, timer)));
       if (button.textContent !== text) button.textContent = text;
       button.classList.toggle("running", running);
       button.classList.toggle("ready", !running && used);
       button.setAttribute("aria-label", `Enemy ${index + 1}: ${label}, ${running ? formatTime(seconds) + ' remaining. Tap to cancel' : 'tap to start'}`);
-      button.title = running ? "Tap to cancel" : `Start ${TIMER_DURATIONS[timer]} seconds`;
+      button.title = running ? "Tap to cancel" : `Start ${numberText(timerDuration(index, timer))} seconds (${summonerHaste(state[index])} summoner haste)`;
     });
   });
 }
@@ -200,13 +229,13 @@ function renderTeam() {
       search.setAttribute("aria-invalid", value && !found ? "true" : "false");
       saveState(); updateAbilities(index); tickTimers();
     });
-    championCell.append(label, search);
+    championCell.append(label, search, summonerControls(index));
     tr.append(levelCell, hasteCell, championCell, ...cells);
     TIMER_DURATIONS.forEach((duration, timer) => {
       const cell = make("td"); const button = make("button", "timer"); button.type = "button";
       button.addEventListener("click", () => {
         const now = Date.now();
-        state[index].timers[timer] = remainingSeconds(state[index].timers[timer], now) > 0 ? 0 : now + duration * 1000;
+        state[index].timers[timer] = remainingSeconds(state[index].timers[timer], now) > 0 ? 0 : now + timerDuration(index, timer) * 1000;
         saveState(); tickTimers();
       });
       cell.append(button); tr.append(cell); timerButtons.push(button);
