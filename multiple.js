@@ -35,7 +35,24 @@ function loadState() {
 function saveState() {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch { /* Calculator still works without storage. */ }
 }
-function getAbilityRanks(level, order, id) {
+function getAbilityRanks(level, order, id, skillOrder = null) {
+  if (skillOrder != null) {
+    if (
+      !Array.isArray(skillOrder) ||
+      skillOrder.length !== 18 ||
+      skillOrder.some(slot => !["Q", "W", "E", "R"].includes(slot))
+    ) {
+      throw new Error("Invalid custom skill order.");
+    }
+
+    const ranks = { Q: 0, W: 0, E: 0, R: 0 };
+
+    for (const slot of skillOrder.slice(0, level)) {
+      ranks[slot]++;
+    }
+
+    return ranks;
+  }
   const jayce = id === "Jayce";
   const ranks = { Q: 1, W: 1, E: 1, R: ["Jayce", "Karma", "Elise", "Nidalee"].includes(id) ? 1 : 0 };
   for (let current = 4; current <= level; current++) {
@@ -86,7 +103,12 @@ function abilityEntries(id, champion, level, haste) {
     }
     return output;
   }
-  const ranks = getAbilityRanks(level, champion.maxOrder, id);
+const ranks = getAbilityRanks(
+  level,
+  champion.maxOrder,
+  id,
+  champion.skillOrder
+);
   if (FORMS[id]) {
     for (const [form, title] of FORMS[id]) {
       for (const slot of "QWE") {
@@ -315,3 +337,14 @@ async function start() {
   } catch (error) { status.textContent = error.message; }
 }
 start();
+
+document.querySelector("#level-all").addEventListener("click", () => {
+  if (rows.length !== 5) return;
+
+  state.forEach(slot => {
+    slot.level = Math.min(18, slot.level + 1);
+  });
+
+  saveState();
+  renderTeam();
+});
