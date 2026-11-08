@@ -4,69 +4,29 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Enemy Team Cooldowns</title>
-
   <link rel="stylesheet" href="multiple.css">
   <script src="multiple.js" defer></script>
 </head>
-
 <body>
   <main>
     <header class="toolbar">
-      <div>
-        <a class="home-link" href="index.html">← Home</a>
-        <h1>Enemy team</h1>
-        <p>Tap a timer to start · Tap again to cancel</p>
-      </div>
-
-      <button
-        id="reset-team"
-        class="reset-button"
-        type="button"
-      >
-        Reset team
-      </button>
+      <div><a class="home-link" href="index.html">← Home</a><h1>Enemy team</h1><p>Tap a timer to start · Tap again to cancel</p></div>
+      <button id="reset-team" class="reset-button" type="button">Reset team</button>
     </header>
-
     <p id="status" role="status">Loading champions…</p>
-
-    <div
-      class="table-scroll"
-      tabindex="0"
-      role="region"
-      aria-label="Enemy team cooldowns; scroll sideways on narrow screens"
-    >
+    <div class="table-scroll" tabindex="0" role="region" aria-label="Enemy team cooldowns; scroll sideways on narrow screens">
       <table>
-        <thead>
-          <tr>
-            <th scope="col">Level</th>
-            <th scope="col">Haste</th>
-            <th scope="col">Champion</th>
-            <th scope="col">Q</th>
-            <th scope="col">W</th>
-            <th scope="col">E</th>
-            <th scope="col">R</th>
-            <th scope="col">Flash</th>
-            <th scope="col">Ign/Bar</th>
-            <th scope="col">240</th>
-          </tr>
-        </thead>
-
+        <thead><tr>
+          <th scope="col">Level</th><th scope="col">Haste</th><th scope="col">Champion</th>
+          <th scope="col">Q</th><th scope="col">W</th><th scope="col">E</th><th scope="col">R</th>
+          <th scope="col">Flash</th><th scope="col">Ign/Bar</th><th scope="col">240</th>
+        </tr></thead>
         <tbody id="team"></tbody>
       </table>
     </div>
-
     <datalist id="champion-options"></datalist>
-
-    <p class="legend">
-      Cooldowns in seconds · Level 3–18 · Haste ±5 ·
-      — not learned or not applicable · ? missing data · * unverified
-    </p>
-
-    <p class="legend">
-      Base timers: 300 / 180 / 240 seconds.
-      Boots and Cosmic affect new timers only.
-      Ability haste affects abilities only.
-    </p>
+    <p class="legend">Cooldowns in seconds · Level 3–18 · Haste ±5 · — not learned or not applicable · ? missing data</p>
+    <p class="legend">Base timers: 300 / 180 / 240 seconds. Boots and Cosmic affect new timers only. Ability haste affects abilities only.</p>
   </main>
 </body>
 </html>

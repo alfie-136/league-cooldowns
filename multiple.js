@@ -56,11 +56,10 @@ function cooldownAtLevel(steps, level) {
 function adjustedCooldown(base, haste) { return base * 100 / (100 + haste); }
 function numberText(value) { return value.toFixed(2).replace(/\.?0+$/, ""); }
 function cooldownEntry(ability, rank, haste, label = "", baseOverride = undefined) {
-  if (ability?.reviewStatus === "not_applicable" || rank === 0) return { label, value: "—", detail: rank === 0 ? "Not learned" : "Not applicable" };
+  if ((ability?.notApplicable || ability?.reviewStatus === "not_applicable") || rank === 0) return { label, value: "—", detail: rank === 0 ? "Not learned" : "Not applicable" };
   const base = baseOverride === undefined ? ability?.baseCooldowns?.[rank - 1] : baseOverride;
   if (typeof base !== "number" || !Number.isFinite(base) || base <= 0) return { label, value: "?", detail: "Missing cooldown data" };
-  const unverified = ability.reviewStatus !== "verified";
-  return { label, value: numberText(adjustedCooldown(base, haste)) + (unverified ? "*" : ""), detail: `${ability.name}${rank ? ` · rank ${rank}` : ""}${unverified ? " · unverified" : ""}` };
+  return { label, value: numberText(adjustedCooldown(base, haste)), detail: `${ability.name}${rank ? ` · rank ${rank}` : ""}` };
 }
 function abilityEntries(id, champion, level, haste) {
   const output = { Q: [], W: [], E: [], R: [] };
@@ -221,9 +220,8 @@ function renderTeam() {
     rows.push({ abilityCells: cells, timerButtons });
     levelCell.append(stepper(index, "level", 1, 3, 18));
     hasteCell.append(stepper(index, "haste", 5, 0, Infinity));
-    const label = make("label", "slot-label", `Enemy ${index + 1}`);
     const search = make("input", "champion-search");
-    search.id = `champion-${index}`; label.htmlFor = search.id;
+    search.id = `champion-${index}`;
     search.type = "search"; search.setAttribute("list", "champion-options");
     search.autocomplete = "off"; search.placeholder = "Search champion";
     search.value = champions[slot.championId]?.name || "";

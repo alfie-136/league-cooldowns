@@ -37,13 +37,11 @@ function adjustedCooldown(baseCooldown, haste) {
 function addAbility(parent, slot, ability, rank, haste, showRank = true) {
   const line = document.createElement("p");
   line.className = "ability-card";
-  let requiresReview = false;
   const rankLabel = showRank ? ` (rank ${rank})` : "";
 
   if (!ability) {
     line.textContent = `${slot}: missing ability data`;
-    requiresReview = true;
-  } else if (ability.reviewStatus === "not_applicable") {
+  } else if ((ability.notApplicable || ability.reviewStatus === "not_applicable")) {
     line.textContent = `${slot} — ${ability.name}: N/A`;
   } else if (rank === 0) {
     line.textContent = `${slot} — ${ability.name}: not learned`;
@@ -51,15 +49,12 @@ function addAbility(parent, slot, ability, rank, haste, showRank = true) {
     const base = ability.baseCooldowns?.[rank - 1];
     if (typeof base !== "number" || !Number.isFinite(base) || base <= 0) {
       line.textContent = `${slot} — ${ability.name}${rankLabel}: needs cooldown data`;
-      requiresReview = true;
-    } else {
+      } else {
       const cooldown = adjustedCooldown(base, haste);
       line.textContent = `${slot} — ${ability.name}${rankLabel}: ${cooldown.toFixed(2)} seconds`;
     }
-    requiresReview = requiresReview || ability.reviewStatus !== "verified";
   }
   parent.append(line);
-  return requiresReview;
 }
 
 // Use the most recent reached breakpoint; do not interpolate between levels.
@@ -85,7 +80,6 @@ function addLevelCooldown(parent, ability, weapon, level, haste) {
     line.textContent = `Q — ${ability?.name || weapon}: needs level cooldown data`;
   }
   parent.append(line);
-  return !valid || ability?.reviewStatus !== "verified";
 }
 
 function update() {
@@ -124,16 +118,13 @@ function update() {
       : championId === "Aphelios"
         ? { R: Number(level >= 6) + Number(level >= 11) + Number(level >= 16) }
         : getAbilityRanks(level, champion.maxOrder, championId);
-    let needsReview = false;
     const groups = formGroups[championId];
 
     if (championId === "Aphelios") {
       for (const weapon of ["calibrum", "severum", "gravitum", "infernum", "crescendum"]) {
-        const review = addLevelCooldown(results, champion.forms?.[weapon]?.Q, weapon, level, haste);
-        needsReview = review || needsReview;
+        addLevelCooldown(results, champion.forms?.[weapon]?.Q, weapon, level, haste);
       }
-      const review = addAbility(results, "R", champion.abilities?.R, ranks.R, haste);
-      needsReview = review || needsReview;
+      addAbility(results, "R", champion.abilities?.R, ranks.R, haste);
     } else if (groups) {
       results.classList.add("jayce-results");
       for (const [form, title] of groups) {
@@ -146,22 +137,17 @@ function update() {
           // Nidalee's cougar abilities scale with her R rank.
           const rank = championId === "Nidalee" && form === "cougar"
             ? ranks.R : ranks[slot];
-          const review = addAbility(group, slot, champion.forms?.[form]?.[slot], rank, haste);
-          needsReview = review || needsReview;
+          addAbility(group, slot, champion.forms?.[form]?.[slot], rank, haste);
         }
         results.append(group);
       }
-      const review = addAbility(results, "R", champion.abilities?.R, ranks.R, haste);
-      needsReview = review || needsReview;
+      addAbility(results, "R", champion.abilities?.R, ranks.R, haste);
     } else {
       for (const slot of ["Q", "W", "E", "R"]) {
-        const review = addAbility(results, slot, champion.abilities?.[slot], ranks[slot], haste, !isUdyr);
-        needsReview = review || needsReview;
+        addAbility(results, slot, champion.abilities?.[slot], ranks[slot], haste, !isUdyr);
       }
     }
-    message.textContent = needsReview
-      ? "Some displayed cooldown data is missing or still needs verification."
-      : "";
+    message.textContent = "";
   } catch (error) {
     results.replaceChildren();
     message.textContent = error.message;
