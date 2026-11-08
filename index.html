@@ -4,38 +4,131 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>League Cooldowns</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="app.js" defer></script>
+
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0c1220;
+      color: #edf2fc;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      min-height: 100svh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    main {
+      width: 100%;
+      max-width: 760px;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(30px, 5vw, 44px);
+      letter-spacing: -1.2px;
+    }
+
+    .intro {
+      color: #aebbd1;
+      line-height: 1.6;
+      margin: 0 0 32px;
+    }
+
+    nav {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .mode {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      padding: 28px;
+      border: 1px solid #30435f;
+      border-radius: 20px;
+      background: #141e30;
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .mode:focus-visible {
+      outline: 3px solid #79c6ff;
+      outline-offset: 5px;
+    }
+
+    .mode-title {
+      font-size: 26px;
+      font-weight: 650;
+      letter-spacing: -0.5px;
+    }
+
+    .description {
+      color: #aebbd1;
+      line-height: 1.6;
+      font-size: 15px;
+    }
+
+    .open {
+      color: #9dd9ff;
+      font-size: 14px;
+      font-weight: 600;
+      margin-top: auto;
+      padding-top: 12px;
+    }
+
+    @media (hover: hover) {
+      .mode:hover {
+        background: #1c2b43;
+        border-color: #79c6ff;
+      }
+    }
+
+    @media (max-width: 520px) {
+      nav {
+        grid-template-columns: 1fr;
+      }
+
+      .mode {
+        padding: 22px;
+      }
+    }
+  </style>
 </head>
+
 <body>
+  <main>
+    <h1>League Cooldowns</h1>
+    <p class="intro">Choose your view.</p>
 
-  <p>
-    <label for="champion">Search champion</label>
-    <input
-      id="champion"
-      type="search"
-      list="champion-options"
-      placeholder="Start typing a champion…"
-      autocomplete="off"
-    >
-    <datalist id="champion-options"></datalist>
-  </p>
+    <nav aria-label="Calculator mode">
+      <a class="mode" href="single.html">
+        <span class="mode-title">Single</span>
+        <span class="description">
+          Your original calculator. Look up one champion’s cooldowns
+          by level and ability haste.
+        </span>
+        <span class="open">Open Single →</span>
+      </a>
 
-  <div>
-    <label for="level">Level</label>
-    <button type="button" id="level-minus" aria-label="Decrease level">−</button>
-    <input id="level" type="number" min="3" max="18" value="3">
-    <button type="button" id="level-plus" aria-label="Increase level">+</button>
-  </div>
-
-  <div>
-    <label for="haste">Ability haste</label>
-    <button type="button" id="haste-minus" aria-label="Decrease haste by 5">−</button>
-    <input id="haste" type="number" min="0" value="0" step="any">
-    <button type="button" id="haste-plus" aria-label="Increase haste by 5">+</button>
-  </div>
-
-  <p id="message" role="status">Loading champion data…</p>
-  <div id="results"></div>
+      <a class="mode" href="multiple.html">
+        <span class="mode-title">Multiple</span>
+        <span class="description">
+          Track five champions together, with separate controls
+          and summoner spell timers.
+        </span>
+        <span class="open">Open Multiple →</span>
+      </a>
+    </nav>
+  </main>
 </body>
 </html>

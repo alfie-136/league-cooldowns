@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>League Cooldowns</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+
+  <p>
+    <label for="champion">Search champion</label>
+    <input
+      id="champion"
+      type="search"
+      list="champion-options"
+      placeholder="Start typing a champion…"
+      autocomplete="off"
+    >
+    <datalist id="champion-options"></datalist>
+  </p>
+
+  <div>
+    <label for="level">Level</label>
+    <button type="button" id="level-minus" aria-label="Decrease level">−</button>
+    <input id="level" type="number" min="3" max="18" value="3">
+    <button type="button" id="level-plus" aria-label="Increase level">+</button>
+  </div>
+
+  <div>
+    <label for="haste">Ability haste</label>
+    <button type="button" id="haste-minus" aria-label="Decrease haste by 5">−</button>
+    <input id="haste" type="number" min="0" value="0" step="any">
+    <button type="button" id="haste-plus" aria-label="Increase haste by 5">+</button>
+  </div>
+
+  <p id="message" role="status">Loading champion data…</p>
+  <div id="results"></div>
+</body>
+</html>
