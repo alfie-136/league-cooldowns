@@ -11,18 +11,19 @@ let rows = [];
 let state = loadState();
 
 function emptySlot() {
-  return { championId: "", level: 3, haste: 0, ionian: false, cosmic: false, timers: [0, 0, 0] };
+  return { championId: "", level: 3, haste: 0, ionian: false, crimson: false, cosmic: false, timers: [0, 0, 0] };
 }
 function loadState() {
   const fallback = () => Array.from({ length: 5 }, emptySlot);
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if (!Array.isArray(saved) || saved.length !== 5) return fallback();
-    return saved.map(item => ({
+    return saved.map((item, index) => ({
       championId: typeof item?.championId === "string" ? item.championId : "",
       level: Number.isInteger(item?.level) && item.level >= 3 && item.level <= 18 ? item.level : 3,
       haste: Number.isFinite(item?.haste) && item.haste >= 0 ? item.haste : 0,
-      ionian: item?.ionian === true,
+      ionian: item?.ionian === true && !(index === 2 && item?.crimson === true),
+      crimson: index === 2 && item?.crimson === true,
       cosmic: item?.cosmic === true,
       timers: TIMER_DURATIONS.map((_, i) => Number.isFinite(item?.timers?.[i]) && item.timers[i] > 0 ? item.timers[i] : 0)
     }));
@@ -158,26 +159,33 @@ function stepper(index, key, amount, min, max) {
   return wrapper;
 }
 function summonerHaste(slot) {
-  return (slot.ionian ? 10 : 0) + (slot.cosmic ? 18 : 0);
+  return (slot.crimson ? 20 : slot.ionian ? 10 : 0) + (slot.cosmic ? 18 : 0);
 }
 function timerDuration(index, timer) {
   return TIMER_DURATIONS[timer] * 100 / (100 + summonerHaste(state[index]));
 }
 function summonerControls(index) {
   const controls = make("div", "summoner-controls");
-  for (const [key, text, fullName] of [
-    ["ionian", "Boots +10", "Ionian Boots of Lucidity"],
-    ["cosmic", "Cosmic +18", "Cosmic Insight"]
-  ]) {
+  const options = [["ionian", "+10", "Ionian Boots of Lucidity"]];
+  if (index === 2) options.push(["crimson", "+20", "Crimson Lucidity upgraded boots"]);
+  options.push(["cosmic", "+18", "Cosmic Insight"]);
+  const buttons = [];
+
+  for (const [key, text, fullName] of options) {
     const button = make("button", "summoner-toggle", text);
     button.type = "button";
-    button.setAttribute("aria-label", `Enemy ${index + 1}: ${fullName}`);
+    button.setAttribute("aria-label", `Enemy ${index + 1}: ${fullName}, ${text} summoner spell haste`);
     button.setAttribute("aria-pressed", String(state[index][key]));
-    button.title = `${fullName}: affects new summoner timers only`;
+    button.title = `${fullName}: ${text} summoner spell haste; affects new timers only`;
+    buttons.push([key, button]);
     button.addEventListener("click", () => {
       state[index][key] = !state[index][key];
-      button.setAttribute("aria-pressed", String(state[index][key]));
-      // Existing deadlines keep the cooldown used when the spell was cast.
+      // Ordinary and upgraded boots are alternatives, not additive.
+      if (state[index][key] && key === "ionian") state[index].crimson = false;
+      if (state[index][key] && key === "crimson") state[index].ionian = false;
+      for (const [option, control] of buttons) {
+        control.setAttribute("aria-pressed", String(state[index][option]));
+      }
       saveState(); tickTimers();
     });
     controls.append(button);
@@ -229,7 +237,8 @@ function renderTeam() {
       search.setAttribute("aria-invalid", value && !found ? "true" : "false");
       saveState(); updateAbilities(index); tickTimers();
     });
-    championCell.append(label, search, summonerControls(index));
+    search.setAttribute("aria-label", `Enemy ${index + 1} champion`);
+    championCell.append(search, summonerControls(index));
     tr.append(levelCell, hasteCell, championCell, ...cells);
     TIMER_DURATIONS.forEach((duration, timer) => {
       const cell = make("td"); const button = make("button", "timer"); button.type = "button";
