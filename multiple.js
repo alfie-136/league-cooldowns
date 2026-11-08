@@ -9,6 +9,7 @@ const TIMER_DURATIONS = [300, 180, 240];
 let champions = {};
 let rows = [];
 let state = loadState();
+let lastCancellation = null;
 
 function emptySlot() {
   return { championId: "", level: 3, haste: 0, ionian: false, crimson: false, cosmic: false, timers: [0, 0, 0], abilityTimers: {} };
@@ -35,24 +36,51 @@ function loadState() {
 function saveState() {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch { /* Calculator still works without storage. */ }
 }
+function canUndoCancellation() {
+  if (!lastCancellation) return false;
+  const slot = state[lastCancellation.index];
+  if (!slot || slot.championId !== lastCancellation.championId) return false;
+  const current = lastCancellation.kind === "ability"
+    ? slot.abilityTimers[lastCancellation.key] || 0
+    : slot.timers[lastCancellation.key];
+  return current === 0;
+}
+function updateUndoButton() {
+  const button = document.querySelector("#undo-cancel");
+  if (!button) return;
+  button.disabled = !canUndoCancellation();
+  button.title = button.disabled ? "No timer cancellation to undo" : "Restore the last cancelled timer's original countdown";
+}
+function rememberCancellation(index, kind, key, deadline) {
+  lastCancellation = { index, kind, key, deadline, championId: state[index].championId };
+}
+function forgetCancellationFor(index, kind = null, key = null) {
+  if (lastCancellation?.index === index &&
+      (kind === null || (lastCancellation.kind === kind && lastCancellation.key === key))) {
+    lastCancellation = null;
+  }
+}
+function undoCancellation() {
+  if (!canUndoCancellation()) { updateUndoButton(); return; }
+  const cancelled = lastCancellation;
+  const slot = state[cancelled.index];
+  lastCancellation = null;
+  if (cancelled.kind === "ability") slot.abilityTimers[cancelled.key] = cancelled.deadline;
+  else slot.timers[cancelled.key] = cancelled.deadline;
+  saveState(); tickTimers();
+}
+
 function getAbilityRanks(level, order, id, skillOrder = null) {
   if (skillOrder != null) {
-    if (
-      !Array.isArray(skillOrder) ||
-      skillOrder.length !== 18 ||
-      skillOrder.some(slot => !["Q", "W", "E", "R"].includes(slot))
-    ) {
-      throw new Error("Invalid custom skill order.");
+    if (!Array.isArray(skillOrder) || skillOrder.length !== 18 ||
+        skillOrder.some(slot => !["Q", "W", "E", "R"].includes(slot))) {
+      throw new Error("Invalid custom skill order. Run build_champions.py again.");
     }
-
     const ranks = { Q: 0, W: 0, E: 0, R: 0 };
-
-    for (const slot of skillOrder.slice(0, level)) {
-      ranks[slot]++;
-    }
-
+    for (const slot of skillOrder.slice(0, level)) ranks[slot]++;
     return ranks;
   }
+
   const jayce = id === "Jayce";
   const ranks = { Q: 1, W: 1, E: 1, R: ["Jayce", "Karma", "Elise", "Nidalee"].includes(id) ? 1 : 0 };
   for (let current = 4; current <= level; current++) {
@@ -103,12 +131,7 @@ function abilityEntries(id, champion, level, haste) {
     }
     return output;
   }
-const ranks = getAbilityRanks(
-  level,
-  champion.maxOrder,
-  id,
-  champion.skillOrder
-);
+  const ranks = getAbilityRanks(level, champion.maxOrder, id, champion.skillOrder);
   if (FORMS[id]) {
     for (const [form, title] of FORMS[id]) {
       for (const slot of "QWE") {
@@ -158,8 +181,13 @@ function updateAbilities(index) {
         button.addEventListener("click", () => {
           const now = Date.now();
           const active = remainingSeconds(state[index].abilityTimers[timerKey] || 0, now) > 0;
-          if (active) delete state[index].abilityTimers[timerKey];
-          else state[index].abilityTimers[timerKey] = now + entry.seconds * 1000;
+          if (active) {
+            rememberCancellation(index, "ability", timerKey, state[index].abilityTimers[timerKey]);
+            delete state[index].abilityTimers[timerKey];
+          } else {
+            forgetCancellationFor(index, "ability", timerKey);
+            state[index].abilityTimers[timerKey] = now + entry.seconds * 1000;
+          }
           saveState(); tickTimers();
         });
         rows[index].abilityButtons.push({ button, timerKey, label: `${key}${entry.label ? " " + entry.label : ""}`, seconds: entry.seconds });
@@ -269,6 +297,7 @@ function tickTimers() {
     });
   });
   tickAbilityTimers();
+  updateUndoButton();
 }
 function renderTeam() {
   const tbody = document.querySelector("#team");
@@ -292,6 +321,7 @@ function renderTeam() {
       const nextId = found?.[0] || "";
       // Clear a previous enemy's timers when a different valid champion is selected.
       if (found && nextId !== state[index].championId) {
+        forgetCancellationFor(index);
         state[index].timers = [0, 0, 0];
         state[index].abilityTimers = {};
       }
@@ -306,7 +336,13 @@ function renderTeam() {
       const cell = make("td"); const button = make("button", "timer"); button.type = "button";
       button.addEventListener("click", () => {
         const now = Date.now();
-        state[index].timers[timer] = remainingSeconds(state[index].timers[timer], now) > 0 ? 0 : now + timerDuration(index, timer) * 1000;
+        if (remainingSeconds(state[index].timers[timer], now) > 0) {
+          rememberCancellation(index, "summoner", timer, state[index].timers[timer]);
+          state[index].timers[timer] = 0;
+        } else {
+          forgetCancellationFor(index, "summoner", timer);
+          state[index].timers[timer] = now + timerDuration(index, timer) * 1000;
+        }
         saveState(); tickTimers();
       });
       cell.append(button); tr.append(cell); timerButtons.push(button);
@@ -330,21 +366,17 @@ async function start() {
     renderTeam(); status.textContent = "";
     document.querySelector("#reset-team").addEventListener("click", () => {
       if (!window.confirm("Clear all five champions, levels, haste values and timers?")) return;
+      lastCancellation = null;
       state = Array.from({ length: 5 }, emptySlot); saveState(); renderTeam();
+    });
+    document.querySelector("#undo-cancel")?.addEventListener("click", undoCancellation);
+    document.querySelector("#level-all")?.addEventListener("click", () => {
+      if (rows.length !== 5) return;
+      state.forEach(slot => { slot.level = Math.min(18, slot.level + 1); });
+      saveState(); renderTeam();
     });
     setInterval(tickTimers, 250);
     document.addEventListener("visibilitychange", tickTimers);
   } catch (error) { status.textContent = error.message; }
 }
 start();
-
-document.querySelector("#level-all").addEventListener("click", () => {
-  if (rows.length !== 5) return;
-
-  state.forEach(slot => {
-    slot.level = Math.min(18, slot.level + 1);
-  });
-
-  saveState();
-  renderTeam();
-});
