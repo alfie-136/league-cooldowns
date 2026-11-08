@@ -11,7 +11,7 @@ let rows = [];
 let state = loadState();
 
 function emptySlot() {
-  return { championId: "", level: 3, haste: 0, ionian: false, crimson: false, cosmic: false, timers: [0, 0, 0] };
+  return { championId: "", level: 3, haste: 0, ionian: false, crimson: false, cosmic: false, timers: [0, 0, 0], abilityTimers: {} };
 }
 function loadState() {
   const fallback = () => Array.from({ length: 5 }, emptySlot);
@@ -25,6 +25,9 @@ function loadState() {
       ionian: item?.ionian === true && !(index === 2 && item?.crimson === true),
       crimson: index === 2 && item?.crimson === true,
       cosmic: item?.cosmic === true,
+      abilityTimers: item?.abilityTimers && typeof item.abilityTimers === "object" && !Array.isArray(item.abilityTimers)
+        ? Object.fromEntries(Object.entries(item.abilityTimers).filter(([, value]) => Number.isFinite(value) && value > 0))
+        : {},
       timers: TIMER_DURATIONS.map((_, i) => Number.isFinite(item?.timers?.[i]) && item.timers[i] > 0 ? item.timers[i] : 0)
     }));
   } catch { return fallback(); }
@@ -59,7 +62,7 @@ function cooldownEntry(ability, rank, haste, label = "", baseOverride = undefine
   if ((ability?.notApplicable || ability?.reviewStatus === "not_applicable") || rank === 0) return { label, value: "—", detail: rank === 0 ? "Not learned" : "Not applicable" };
   const base = baseOverride === undefined ? ability?.baseCooldowns?.[rank - 1] : baseOverride;
   if (typeof base !== "number" || !Number.isFinite(base) || base <= 0) return { label, value: "?", detail: "Missing cooldown data" };
-  return { label, value: numberText(adjustedCooldown(base, haste)), detail: `${ability.name}${rank ? ` · rank ${rank}` : ""}` };
+  return { label, value: numberText(adjustedCooldown(base, haste)), seconds: adjustedCooldown(base, haste), detail: `${ability.name}${rank ? ` · rank ${rank}` : ""}` };
 }
 function abilityEntries(id, champion, level, haste) {
   const output = { Q: [], W: [], E: [], R: [] };
@@ -104,6 +107,7 @@ function make(tag, className = "", text = "") {
   return el;
 }
 function updateAbilities(index) {
+  rows[index].abilityButtons = [];
   const slot = state[index];
   const champion = champions[slot.championId];
   let entries = null;
@@ -125,9 +129,24 @@ function updateAbilities(index) {
       wrap.title = entry.detail;
       if (entry.label) wrap.append(make("span", "ability-label", entry.label));
       wrap.append(make("span", "ability-value", entry.value));
+      if (Number.isFinite(entry.seconds) && entry.seconds > 0) {
+        const timerKey = [slot.championId, key, entry.label || "standard"].join(":");
+        const button = make("button", "ability-timer");
+        button.type = "button";
+        button.addEventListener("click", () => {
+          const now = Date.now();
+          const active = remainingSeconds(state[index].abilityTimers[timerKey] || 0, now) > 0;
+          if (active) delete state[index].abilityTimers[timerKey];
+          else state[index].abilityTimers[timerKey] = now + entry.seconds * 1000;
+          saveState(); tickTimers();
+        });
+        rows[index].abilityButtons.push({ button, timerKey, label: `${key}${entry.label ? " " + entry.label : ""}`, seconds: entry.seconds });
+        wrap.append(button);
+      }
       cell.append(wrap);
     }
   }
+  tickAbilityTimers();
 }
 function stepper(index, key, amount, min, max) {
   const wrapper = make("div", "stepper");
@@ -192,7 +211,26 @@ function summonerControls(index) {
   return controls;
 }
 function remainingSeconds(deadline, now = Date.now()) { return Math.max(0, Math.ceil((deadline - now) / 1000)); }
-function formatTime(seconds) { return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`; }
+function formatTime(seconds) { return `${seconds}s`; }
+function abilityTimeText(milliseconds) {
+  return (Math.ceil(milliseconds / 100) / 10).toFixed(1) + "s";
+}
+function tickAbilityTimers() {
+  const now = Date.now();
+  rows.forEach((row, index) => {
+    for (const { button, timerKey, label, seconds } of row.abilityButtons || []) {
+      const deadline = state[index].abilityTimers[timerKey] || 0;
+      const remaining = Math.max(0, deadline - now);
+      const active = remaining > 0;
+      const text = active ? abilityTimeText(remaining) : deadline ? "Ready" : "Start";
+      if (button.textContent !== text) button.textContent = text;
+      button.classList.toggle("running", active);
+      button.classList.toggle("ready", !active && deadline > 0);
+      button.title = active ? "Tap to cancel" : `Start ${numberText(seconds)} seconds`;
+      button.setAttribute("aria-label", `Enemy ${index + 1}: ${label}, ${active ? text + " remaining; tap to cancel" : "start " + numberText(seconds) + " seconds"}`);
+    }
+  });
+}
 function tickTimers() {
   rows.forEach((row, index) => {
     row.timerButtons.forEach((button, timer) => {
@@ -208,6 +246,7 @@ function tickTimers() {
       button.title = running ? "Tap to cancel" : `Start ${numberText(timerDuration(index, timer))} seconds (${summonerHaste(state[index])} summoner haste)`;
     });
   });
+  tickAbilityTimers();
 }
 function renderTeam() {
   const tbody = document.querySelector("#team");
@@ -217,7 +256,7 @@ function renderTeam() {
     const levelCell = make("td"); const hasteCell = make("td"); const championCell = make("td");
     const cells = Array.from({ length: 4 }, () => make("td"));
     const timerButtons = [];
-    rows.push({ abilityCells: cells, timerButtons });
+    rows.push({ abilityCells: cells, timerButtons, abilityButtons: [] });
     levelCell.append(stepper(index, "level", 1, 3, 18));
     hasteCell.append(stepper(index, "haste", 5, 0, Infinity));
     const search = make("input", "champion-search");
@@ -230,7 +269,10 @@ function renderTeam() {
       const found = Object.entries(champions).find(([id, c]) => id.toLowerCase() === value || c.name.toLowerCase() === value);
       const nextId = found?.[0] || "";
       // Clear a previous enemy's timers when a different valid champion is selected.
-      if (found && nextId !== state[index].championId) state[index].timers = [0, 0, 0];
+      if (found && nextId !== state[index].championId) {
+        state[index].timers = [0, 0, 0];
+        state[index].abilityTimers = {};
+      }
       state[index].championId = nextId;
       search.setAttribute("aria-invalid", value && !found ? "true" : "false");
       saveState(); updateAbilities(index); tickTimers();
