@@ -6,6 +6,13 @@ const FORMS = {
   Nidalee: [["human", "Human"], ["cougar", "Cougar"]]
 };
 const TIMER_DURATIONS = [300, 180, 240];
+const STATIC_COOLDOWN_NOTES = {
+  Talon: { E: "CD: 2" },
+  Singed: { Q: "SC: 1" },
+  Yuumi: { W: "SC: 10/5/0" },
+  Veigar: { W: "8–0s based on Phenomenal Evil stacks" },
+  Zeri: { Q: "SC: 1/AS"}
+};
 let champions = {};
 let rows = [];
 let state = loadState();
@@ -105,6 +112,7 @@ function adjustedCooldown(base, haste) { return base * 100 / (100 + haste); }
 function numberText(value) { return value.toFixed(2).replace(/\.?0+$/, ""); }
 function cooldownEntry(ability, rank, haste, label = "", baseOverride = undefined) {
   if ((ability?.notApplicable || ability?.reviewStatus === "not_applicable") || rank === 0) return { label, value: "—", detail: rank === 0 ? "Not learned" : "Not applicable" };
+  if (ability?.noCooldownRanks?.includes(rank)) return { label, value: "0", detail: `${ability.name} · rank ${rank} · no cooldown` };
   const base = baseOverride === undefined ? ability?.baseCooldowns?.[rank - 1] : baseOverride;
   if (typeof base !== "number" || !Number.isFinite(base) || base <= 0) return { label, value: "?", detail: "Missing cooldown data" };
   return { label, value: numberText(adjustedCooldown(base, haste)), seconds: adjustedCooldown(base, haste), detail: `${ability.name}${rank ? ` · rank ${rank}` : ""}` };
@@ -141,7 +149,11 @@ function abilityEntries(id, champion, level, haste) {
     }
     output.R.push(cooldownEntry(champion.abilities?.R, ranks.R, haste));
   } else {
-    for (const slot of "QWER") output[slot].push(cooldownEntry(champion.abilities?.[slot], ranks[slot], haste));
+    for (const slot of "QWER") {
+      const entry = cooldownEntry(champion.abilities?.[slot], ranks[slot], haste);
+      entry.note = STATIC_COOLDOWN_NOTES[id]?.[slot] || "";
+      output[slot].push(entry);
+    }
   }
   return output;
 }
@@ -172,6 +184,7 @@ function updateAbilities(index) {
     for (const entry of values) {
       const wrap = make("div", "ability-entry");
       wrap.title = entry.detail;
+      if (entry.note) wrap.append(make("span", "ability-note", entry.note));
       if (entry.label) wrap.append(make("span", "ability-label", entry.label));
       wrap.append(make("span", "ability-value", entry.value));
       if (Number.isFinite(entry.seconds) && entry.seconds > 0) {
