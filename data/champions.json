@@ -397,11 +397,11 @@
           "name": "Bandage Toss",
           "maxRank": 5,
           "baseCooldowns": [
-            3.0,
-            3.0,
-            3.0,
-            3.0,
-            3.0
+            16.0,
+            15.5,
+            15.0,
+            14.5,
+            14.0
           ],
           "noCooldownRanks": [],
           "notApplicable": false,
@@ -819,11 +819,11 @@
           "name": "Hawkshot",
           "maxRank": 5,
           "baseCooldowns": [
-            5.0,
-            5.0,
-            5.0,
-            5.0,
-            5.0
+            90.0,
+            80.0,
+            70.0,
+            60.0,
+            50.0
           ],
           "noCooldownRanks": [],
           "notApplicable": false,
@@ -997,11 +997,11 @@
           "name": "Arise!",
           "maxRank": 5,
           "baseCooldowns": [
-            1.5,
-            1.5,
-            1.5,
-            1.5,
-            1.5
+            10.0,
+            9.0,
+            8.0,
+            7.0,
+            6.0
           ],
           "noCooldownRanks": [],
           "notApplicable": false,
@@ -1445,11 +1445,11 @@
           "name": "Yordle Snap Trap",
           "maxRank": 5,
           "baseCooldowns": [
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5
+            26.0,
+            22.0,
+            18.0,
+            14.0,
+            10.0
           ],
           "noCooldownRanks": [],
           "notApplicable": false,
@@ -1729,9 +1729,9 @@
           "name": "Missile Barrage",
           "maxRank": 3,
           "baseCooldowns": [
-            2.0,
-            2.0,
-            2.0
+            20.0,
+            20.0,
+            20.0
           ],
           "noCooldownRanks": [],
           "notApplicable": false,
@@ -2596,11 +2596,11 @@
           "name": "Powder Keg",
           "maxRank": 5,
           "baseCooldowns": [
+            18.0,
             17.0,
             16.0,
             15.0,
-            14.0,
-            13.0
+            14.0
           ],
           "noCooldownRanks": [],
           "notApplicable": false,
@@ -3016,11 +3016,11 @@
           "name": "H-28 G Evolution Turret",
           "maxRank": 5,
           "baseCooldowns": [
-            1.0,
-            1.0,
-            1.0,
-            1.0,
-            1.0
+            20.0,
+            20.0,
+            20.0,
+            20.0,
+            20.0
           ],
           "noCooldownRanks": [],
           "notApplicable": false,
@@ -3286,11 +3286,11 @@
           "name": "Brushmaker",
           "maxRank": 5,
           "baseCooldowns": [
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5
+            20.0,
+            20.0,
+            20.0,
+            20.0,
+            20.0
           ],
           "noCooldownRanks": [],
           "notApplicable": false,
@@ -3672,11 +3672,11 @@
           "name": "Captive Audience",
           "maxRank": 5,
           "baseCooldowns": [
-            2.0,
-            2.0,
-            2.0,
-            2.0,
-            2.0
+            24.0,
+            21.5,
+            19.0,
+            16.5,
+            14.0
           ],
           "noCooldownRanks": [],
           "notApplicable": false,
@@ -3914,11 +3914,11 @@
           "name": "Sentinel",
           "maxRank": 5,
           "baseCooldowns": [
-            30.0,
-            30.0,
-            30.0,
-            30.0,
-            30.0
+            90.0,
+            80.0,
+            70.0,
+            60.0,
+            50.0
           ],
           "noCooldownRanks": [],
           "notApplicable": false,
@@ -4575,11 +4575,11 @@
           "name": "Violent Tendencies",
           "maxRank": 5,
           "baseCooldowns": [
-            13.0,
-            12.0,
             11.0,
-            10.0,
-            9.0
+            9.5,
+            8.0,
+            6.5,
+            5.0
           ],
           "noCooldownRanks": [],
           "notApplicable": false,
@@ -5613,11 +5613,11 @@
           "name": "Warm Hugs",
           "maxRank": 5,
           "baseCooldowns": [
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5
+            17.0,
+            16.0,
+            15.0,
+            14.0,
+            13.0
           ],
           "noCooldownRanks": [],
           "notApplicable": false,
@@ -6363,11 +6363,11 @@
           "name": "Slipstream",
           "maxRank": 5,
           "baseCooldowns": [
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5
+            26.0,
+            22.5,
+            19.0,
+            15.5,
+            12.0
           ],
           "noCooldownRanks": [],
           "notApplicable": false,
@@ -7579,11 +7579,11 @@
           "name": "Electro Harpoon",
           "maxRank": 5,
           "baseCooldowns": [
-            0.5,
-            0.5,
-            0.5,
-            0.5,
-            0.5
+            6.0,
+            6.0,
+            6.0,
+            6.0,
+            6.0
           ],
           "noCooldownRanks": [],
           "notApplicable": false,
@@ -7721,12 +7721,12 @@
           "name": "Inferno Trigger",
           "maxRank": 3,
           "baseCooldowns": [
-            5.0,
-            5.0,
-            5.0
+            null,
+            null,
+            null
           ],
           "noCooldownRanks": [],
-          "notApplicable": false,
+          "notApplicable": true,
           "sourcePatch": "16.22"
         }
       }
@@ -9023,11 +9023,11 @@
           "name": "Starlight's Touch",
           "maxRank": 5,
           "baseCooldowns": [
-            3.0,
-            3.0,
-            3.0,
-            3.0,
-            3.0
+            15.0,
+            15.0,
+            15.0,
+            15.0,
+            15.0
           ],
           "noCooldownRanks": [],
           "notApplicable": false,
@@ -9129,9 +9129,9 @@
           "name": "Noxious Trap",
           "maxRank": 3,
           "baseCooldowns": [
-            0.25,
-            0.25,
-            0.25
+            35.0,
+            30.0,
+            25.0
           ],
           "noCooldownRanks": [],
           "notApplicable": false,
@@ -9829,14 +9829,14 @@
           "name": "Dark Matter",
           "maxRank": 5,
           "baseCooldowns": [
-            8.0,
-            8.0,
-            8.0,
-            8.0,
-            8.0
+            null,
+            null,
+            null,
+            null,
+            null
           ],
           "noCooldownRanks": [],
-          "notApplicable": false,
+          "notApplicable": true,
           "sourcePatch": "16.22"
         },
         "E": {
@@ -9893,11 +9893,11 @@
           "name": "Void Rift",
           "maxRank": 5,
           "baseCooldowns": [
-            1.5,
-            1.5,
-            1.5,
-            1.5,
-            1.5
+            19.0,
+            18.0,
+            17.0,
+            16.0,
+            15.0
           ],
           "noCooldownRanks": [],
           "notApplicable": false,
@@ -10583,14 +10583,14 @@
           "name": "Steel Tempest",
           "maxRank": 5,
           "baseCooldowns": [
-            4.0,
-            4.0,
-            4.0,
-            4.0,
-            4.0
+            null,
+            null,
+            null,
+            null,
+            null
           ],
           "noCooldownRanks": [],
-          "notApplicable": false,
+          "notApplicable": true,
           "sourcePatch": "16.22"
         },
         "W": {
@@ -10647,28 +10647,28 @@
           "name": "Mortal Steel",
           "maxRank": 5,
           "baseCooldowns": [
-            4.0,
-            4.0,
-            4.0,
-            4.0,
-            4.0
+            null,
+            null,
+            null,
+            null,
+            null
           ],
           "noCooldownRanks": [],
-          "notApplicable": false,
+          "notApplicable": true,
           "sourcePatch": "16.22"
         },
         "W": {
           "name": "Spirit Cleave",
           "maxRank": 5,
           "baseCooldowns": [
-            14.0,
-            14.0,
-            14.0,
-            14.0,
-            14.0
+            null,
+            null,
+            null,
+            null,
+            null
           ],
           "noCooldownRanks": [],
-          "notApplicable": false,
+          "notApplicable": true,
           "sourcePatch": "16.22"
         },
         "E": {
@@ -11366,11 +11366,11 @@
           "name": "Rampant Growth",
           "maxRank": 5,
           "baseCooldowns": [
-            null,
-            null,
-            null,
-            null,
-            null
+            16.0,
+            14.5,
+            13.0,
+            11.5,
+            10.0
           ],
           "noCooldownRanks": [],
           "notApplicable": false,
