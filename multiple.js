@@ -7,11 +7,19 @@ const FORMS = {
 };
 const TIMER_DURATIONS = [300, 180, 240];
 const STATIC_COOLDOWN_NOTES = {
-  Talon: { E: "CD: 2" },
-  Singed: { Q: "SC: 1" },
+  Talon: { E: "CD: 2*" },
   Yuumi: { W: "SC: 10/5/0" },
   Veigar: { W: "8–0s based on Phenomenal Evil stacks" },
-  Zeri: { Q: "SC: 1/AS"}
+  Zeri: { Q: "SC: 1/AS"},
+  Heimerdinger: { R: "SC: 3"},
+  Yasuo: { Q: "SC: 4-1.33 (Based on AS)"},
+  Yone: { Q: "SC: 4-1.33 (Based on AS)"},
+  Gnar: { W: "Passive as mini-Gnar"},
+  Amumu: { Q: "SC: 3"},
+  Taric: { Q: "CD: 3*"},
+  Samira: { R: "SC: 5"},
+  Yasuo: { E: "SC (per target): 10/9/8/7/6"},
+  Yone: { W: "SC: 14-6 (Based on AS)"}
 };
 let champions = {};
 let rows = [];
