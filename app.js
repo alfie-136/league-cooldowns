@@ -192,7 +192,7 @@ async function start() {
       option.value = champion.name;
       suggestions.append(option);
     }
-    championInput.value = sortedChampions[0]?.name ?? "";
+    championInput.value = "";
     championInput.addEventListener("input", update);
     levelInput.addEventListener("input", update);
     hasteInput.addEventListener("input", update);
