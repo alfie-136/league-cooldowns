@@ -9,17 +9,15 @@ const TIMER_DURATIONS = [300, 180, 240];
 const STATIC_COOLDOWN_NOTES = {
   Talon: { E: "CD: 2*" },
   Yuumi: { W: "SC: 10/5/0" },
-  Veigar: { W: "8–0s based on Phenomenal Evil stacks" },
-  Zeri: { Q: "SC: 1/AS"},
-  Heimerdinger: { R: "SC: 3"},
-  Yasuo: { Q: "SC: 4-1.33 (Based on AS)"},
-  Yone: { Q: "SC: 4-1.33 (Based on AS)"},
-  Gnar: { W: "Passive as mini-Gnar"},
-  Amumu: { Q: "SC: 3"},
-  Taric: { Q: "CD: 3*"},
-  Samira: { R: "SC: 5"},
-  Yasuo: { E: "SC (per target): 10/9/8/7/6"},
-  Yone: { W: "SC: 14-6 (Based on AS)"}
+  Veigar: { W: "SC: 8–0s based on passive stacks" },
+  Zeri: { Q: "SC: 1/AS" },
+  Heimerdinger: { R: "SC: 3" },
+  Yasuo: { Q: "SC: 4-1.33 (Based on AS)", E: "SC (per target): 10/9/8/7/6" },
+  Yone: { Q: "SC: 4-1.33 (Based on AS)", W: "SC: 14-6 (Based on AS)" },
+  Gnar: { W: "Passive as mini-Gnar" },
+  Amumu: { Q: "SC: 3" },
+  Taric: { Q: "CD: 3*" },
+  Samira: { R: "SC: 5" },
 };
 let champions = {};
 let rows = [];
@@ -195,7 +193,7 @@ function updateAbilities(index) {
       if (entry.note) wrap.append(make("span", "ability-note", entry.note));
       if (entry.label) wrap.append(make("span", "ability-label", entry.label));
       wrap.append(make("span", "ability-value", entry.value));
-      if (Number.isFinite(entry.seconds) && entry.seconds > 0) {
+      if (Number.isFinite(entry.seconds) && entry.seconds > 30) {
         const timerKey = [slot.championId, key, entry.label || "standard"].join(":");
         const button = make("button", "ability-timer");
         button.type = "button";
