@@ -117,7 +117,7 @@ function update() {
     return;
   }
   if (!champion) {
-    message.textContent = "Type a champion's full name or choose a suggestion.";
+    message.textContent = "Type a champion's full name or select from the list.";
     return;
   }
 
